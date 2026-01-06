@@ -23,12 +23,12 @@ jobs:
           wget https://dl.cros.download/files/${{ matrix.board }}/${{ matrix.board }}.zip || exit 1
           unzip ${{ matrix.board }}.zip || exit 1
           sudo QUIET=1 bash wax/wax.sh -i ${{ matrix.board }}.bin -p legacy
-          zip ${{ matrix.board }}-legacy.zip ${{ matrix.board }}.bin
+          zip ${{ matrix.board }}-cr3nroll.zip ${{ matrix.board }}.bin
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: legacy   
+          tag_name: Prebuilt   
           files: ${{ matrix.board }}-legacy.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
