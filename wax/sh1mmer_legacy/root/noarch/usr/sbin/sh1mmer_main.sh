@@ -1,4 +1,6 @@
 #!/bin/bash
+# THIS IS CR3NROLL, NOT SH1MMER!! :P
+
 
 # -- CUSTOM FLAGS --
 BROKER_PATH="broker.sh" # if you put broker in another spot, put the path here :3
@@ -272,12 +274,12 @@ menu_reset
 full_menu
 fi
 if [[ "${options[$selected_index]}" == "Exit" ]]; then
-    echo "Exiting."
+    echo "Exiting & Rebooting"
     sleep 0.5
     clear
     tput cnorm
-    exit 0
 	reboot
+    exit 0
 fi
 if [[ "${options[$selected_index]}" == "Save Current Enrollment Keys" ]]; then
     menu_logo
