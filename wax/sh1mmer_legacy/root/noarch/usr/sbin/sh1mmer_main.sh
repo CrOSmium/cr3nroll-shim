@@ -60,6 +60,7 @@ run_task() {
 	fi
 	echo "Press enter to return to the main menu."
 	read -res
+	tput civis 
 	menu_reset
 	full_menu
 }
@@ -224,6 +225,7 @@ fi
 if [[ "${options[$selected_index]}" == "Bash" ]]; then
 clear
 menu_logo
+tput cnorm
 run_task bash
 fi
 
