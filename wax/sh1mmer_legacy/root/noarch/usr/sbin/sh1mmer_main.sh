@@ -60,6 +60,8 @@ run_task() {
 	fi
 	echo "Press enter to return to the main menu."
 	read -res
+	menu_reset
+	full_menu
 }
 # end of theft
 
