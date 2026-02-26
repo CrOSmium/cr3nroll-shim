@@ -28,7 +28,7 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: Prebuilds   
+          tag_name: Prebuilts   
           files: ${{ matrix.board }}-cr3nroll.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
