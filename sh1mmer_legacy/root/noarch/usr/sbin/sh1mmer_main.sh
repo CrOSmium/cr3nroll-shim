@@ -36,9 +36,9 @@ D='\033[1;90m'
 
 menu_reset() {
     if [[ "$factorysaved" == "1" ]]; then
-        options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "${G}Backup Factory Enrollment Info (Recommended)${N}" "${R}Manage DevFW${N}" "Deprovision/Unenroll"  "Bash" "Exit")
+        options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "${G}Backup Factory Enrollment Info (Recommended)${N}" "Deprovision/Unenroll"  "Bash" "Exit")
     else
-        options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "${R}Manage DevFW${N}" "Deprovision/Unenroll"  "Bash" "Exit")
+        options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "Deprovision/Unenroll"  "Bash" "Exit")
     fi
     if [[ "$(vpd -i RW_VPD -g "re_enrollment_key")" != "" ]]; then
         options=("Remove Quicksilver${N}" "Exit")
@@ -450,64 +450,6 @@ selector() {
         fi
         menu_reset
         full_menu
-    fi
-    if [[ "${options[$selected_index]}" == "Flash DevFW" ]]; then
-        echo -e "This feature is not finished!"
-        sleep 1
-        menu_reset
-        full_menu
-        sleep 999999999 # temporary
-        # read firmware
-        DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
-        if [[ $DEVFW != 1 ]]; then
-            if [[ ! -f $SHIMPART/firmware-MPKeys.rom ]]; then
-                echo -e "Backing up MPkeys..."
-                sleep 0.6
-                flashrom -r $SHIMPART/firmware-MPKeys.rom
-            else
-                echo -e "MPkeys has already been backed up, skipping."
-            fi
-            
-            # flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
-            if [[ -f $SHIMPART/firmware-MPKeys.rom ]]; then # ONLY FLASH IF MPKEYS BACKED UP!
-                bash /usr/share/vboot/bin/set_gbb_flags.sh 0x80b1
-                bash /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid
-                vpd -i RO_VPD -s "dev_firmware"=1
-            else
-                echo -e "FAILED! MPkeys did not back up correctly.\nReturning to menu..."
-            fi
-        else
-            echo -e "You are already using DevFW (Devkeys), you do not need to flash them again!\nReturning to menu..."
-            sleep 2
-            menu_reset
-            full_menu
-        fi
-    fi
-    if [[ "${options[$selected_index]}" == "Flash MPkeys" ]]; then
-        echo -e "This feature is not finished!"
-        sleep 2
-        menu_reset
-        full_menu
-        sleep 999999999 # temporary
-        flashrom -w $SHIMPART/firmware-MPKeys.rom # write firmware from recovery partition
-        vpd -i RO_VPD -d "dev_firmware" # just in case
-
-    fi
-    if [[ "${options[$selected_index]}" == "-- RETURN TO MENU --" ]]; then
-        menu_reset
-        full_menu
-    fi
-    
-    if [[ "${options[$selected_index]}" == "${R}Manage DevFW${N}" ]]; then
-        clear
-        menu_logo
-        echo -e "-- Manage DevFW --\n"
-        
-        options=("-- RETURN TO MENU --" "Flash DevFW" "Flash MPkeys")
-            num_options=${#options[@]}
-            selected_index=0
-        full_menu        
-        
     fi
     if [[ "${options[$selected_index]}" == "${B}Backup Enrollment Info${N}" ]]; then
         menu_logo
