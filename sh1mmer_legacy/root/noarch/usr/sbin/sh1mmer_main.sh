@@ -1,6 +1,6 @@
 #!/bin/bash
 # This is a special version of cr3nroll designed to replace sh1mmer_main.sh inside of sh1mmer. (sh1mmer_legacy/root/noarch/usr/sbin/sh1mmer_main.sh)
-# The primary difference is the option to select bash, and flashing DevFW :P
+# The primary difference is the option to select bash
 
 # -- CUSTOM FLAGS --
 BROKER_PATH="broker.sh" # if you put broker in another spot, put the path here :3
@@ -222,6 +222,7 @@ selector() {
     if [[ "${options[$selected_index]}" == "Bash" ]]; then
         clear
         menu_logo
+        tput cnorm
         run_task bash
     fi
 
