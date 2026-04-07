@@ -1,12 +1,12 @@
 #!/bin/bash
-# This is a special version of cr3nroll designed to replace sh1mmer_main.sh inside of sh1mmer. (sh1mmer_legacy/root/noarch/usr/sbin/sh1mmer_main.sh)
-# The primary difference is the option to select bash
+
+# SCRIPT VERSION: v1.1.1
 
 # -- CUSTOM FLAGS --
 BROKER_PATH="broker.sh" # if you put broker in another spot, put the path here :3
-BROKER_ENABLED="false"  # enable or disable launching br0ker for supported versions
-SHIMPART="/dev/temp" # this is where the backup partition for used before flashing DevFW is located, DO NOT PUT A TRAILING '/'!!
-
+BROKER_ENABLED="true"  # enable or disable launching br0ker for supported versions
+INSIDE_SHIM="true" # set to 'true' if you want bash as an option and reboot on exit
+PAYLOAD_MODE="false" # set to 'true' if you do not want deprovision/unenroll as an option, this only works if INSIDE_SHIM="false"
 
 # -- { DO NOT MODIFY } --
 selected_index=0
@@ -36,9 +36,21 @@ D='\033[1;90m'
 
 menu_reset() {
     if [[ "$factorysaved" == "1" ]]; then
-        options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "${G}Backup Factory Enrollment Info (Recommended)${N}" "Deprovision/Unenroll"  "Bash" "Exit")
+        if [[ "$INSIDE_SHIM" == "true" ]]; then
+            options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "${G}Backup Factory Enrollment Info (Recommended)${N}" "Deprovision/Unenroll" "Bash" "Exit")
+        else
+            options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "${G}Backup Factory Enrollment Info (Recommended)${N}" "Deprovision/Unenroll" "Exit")
+        fi
     else
-        options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "Deprovision/Unenroll"  "Bash" "Exit")
+        if [[ "$INSIDE_SHIM" == "true" ]]; then
+            options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "Deprovision/Unenroll" "Bash" "Exit")
+        else
+            if [[ "$PAYLOAD_MODE" == "true" ]]; then
+                options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "Exit")
+            else
+                options=("Save Current Enrollment Keys" "${R}Load saved Enrollment Keys${N}" "Generate new Enrollment Keys" "${R}Import Enrollment Info${N}" "Edit Enrollment list${N}" "${B}Backup Enrollment Info${N}" "${R}Restore Factory Enrollment Info${N}" "Deprovision/Unenroll" "Exit")
+            fi
+        fi    
     fi
     if [[ "$(vpd -i RW_VPD -g "re_enrollment_key")" != "" ]]; then
         options=("Remove Quicksilver${N}" "Exit")
@@ -48,7 +60,9 @@ menu_reset() {
 }
 
 menu_reset
-# Stolen Sh1mmer code
+
+# stolen sh1mmer code
+
 run_task() {
     if "$@"; then
         echo "Done."
@@ -60,9 +74,8 @@ run_task() {
     menu_reset
     full_menu
 }
-# end of theft
 
-# STOLEN CODE FROM BR0KER TO GET MILESTONE :3
+# br0ker milestone getter
 get_largest_cros_blockdev() {
     local largest size dev_name tmp_size remo
     size=0
@@ -217,15 +230,6 @@ selector() {
             done
         fi
     fi
-
-    # SHIM UNIQUE OPTION!!
-    if [[ "${options[$selected_index]}" == "Bash" ]]; then
-        clear
-        menu_logo
-        tput cnorm
-        run_task bash
-    fi
-
     if [[ "${options[$selected_index]}" == "${R}Import Enrollment Info${N}" ]]; then
         clear
         menu_logo
@@ -295,12 +299,20 @@ selector() {
         full_menu
     fi
     if [[ "${options[$selected_index]}" == "Exit" ]]; then
-        echo "Exiting & Rebooting"
-        sleep 0.5
-        clear
-        tput cnorm
-        reboot
-        exit 0
+        if [[ "$INSIDE_SHIM" == "true" ]]; then
+            echo "Exiting & Rebooting"
+            sleep 0.5
+            clear
+            tput cnorm
+            reboot
+            exit 0
+        else
+            echo "Exiting."
+            sleep 0.5
+            clear
+            tput cnorm
+            exit 0
+        fi
     fi
     if [[ "${options[$selected_index]}" == "Save Current Enrollment Keys" ]]; then
         menu_logo
@@ -384,7 +396,7 @@ selector() {
             menu_reset
             full_menu
         else
-                        if [[ "$MILESTONE" -ge 148 ]]; then
+            if [[ "$MILESTONE" -ge 148 ]]; then
                 echo -e "\n${R}Sorry, no unenrollment found for your version (yet), try downgrading if you can!${N}"
                 sleep 0.67
                 echo -e "Returning to menu..."
@@ -549,6 +561,17 @@ selector() {
             full_menu
         fi
     fi
+
+
+    # SHIM UNIQUE OPTION!!
+    if [[ "${options[$selected_index]}" == "Bash" ]]; then
+        clear
+        menu_logo
+        tput cnorm
+        run_task bash
+    fi
+
+    
     if [[ "${options[$selected_index]}" == "Generate new Enrollment Keys" ]]; then
         menu_logo
         echo -e "Would you like to generate and save new Enrollment Keys? (Does not override currently selected keys)"
@@ -783,7 +806,6 @@ selector() {
 full_menu() {
     clear
     tput civis
-    menu_logo
     while true; do
         display_menu
 
@@ -820,6 +842,7 @@ menu_logo() {
 }
 display_menu() {
     tput sc
+    menu_logo
 
     if [[ "$writeprotect" == *"disabled"* ]]; then
         echo -e "You currently have Firmware Write Protection set to ${R}(DISABLED)${N}, all features *should* work properly. Have fun :D"
